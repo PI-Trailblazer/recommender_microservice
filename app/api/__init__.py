@@ -4,4 +4,4 @@ from . import recommender
 
 router = APIRouter()
 
-router.include_router(user.router, prefix="/recommender", tags=["recommender"])
+router.include_router(recommender.router, prefix="/recommender", tags=["recommender"])
