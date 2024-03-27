@@ -1,6 +1,5 @@
 from fastapi import APIRouter, HTTPException
 from elasticsearch import Elasticsearch
-from sentence_transformers import SentenceTransformer
 
 router = APIRouter()
 
