@@ -13,6 +13,8 @@ sqlalchemy = "^2.0.28"
 pydantic-settings = "^2.2.1"
 loguru = "^0.7.2"
 requests = "^2.31.0"
+elasticsearch = "^8.13.0"
+sentence-transformers = "^2.6.1"
 
 [tool.poetry.group.dev.dependencies]
 uvicorn = "^0.28.0"
