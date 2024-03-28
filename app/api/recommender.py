@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException
+from typing import List
+from fastapi import APIRouter, HTTPException, Query
 from elasticsearch import Elasticsearch
 
 router = APIRouter()
@@ -7,10 +8,11 @@ es = Elasticsearch("http://localhost:9200")
 
 
 @router.get("/user_recommendation")
-async def get_recommendations(user_tags: str, size: int):
-    try:
-        user_tags = user_tags.split(",")
+async def get_recommendations(size: int, user_tags: List[str] = Query(["all"])):
+    if user_tags == ["all"]:
+        user_tags = []
 
+    try:
         search_results = es.search(
             index="offers",
             body={
