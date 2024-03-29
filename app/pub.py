@@ -15,5 +15,12 @@ channel = connection.channel()
 channel.basic_publish(
     exchange="",
     routing_key="new_offers",
-    body='{"offer_id": "1", "tags": ["clothes", "shoes"]}',
+    body='{"offer_id": "15", "tags": ["clothes", "shoes"]}',
+)
+
+# publish a message to the purchased_offers queue with a json payload with offer_id
+channel.basic_publish(
+    exchange="",
+    routing_key="purchased_offers",
+    body='{"offer_id": "15"}',
 )

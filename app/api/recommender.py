@@ -85,3 +85,22 @@ async def get_recommendations(size: int, user_tags: List[str] = Query(["all"])):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/get_elasticsearch_data")
+async def get_elasticsearch_data():
+    print("get_elasticsearch_data")
+    try:
+        # Execute a search query to retrieve all documents from the Elasticsearch index
+        search_results = es.search(index="offers", body={"query": {"match_all": {}}})
+
+        # Extract the hits (documents) from the search results
+        hits = search_results["hits"]["hits"]
+
+        # Extract values from hits
+        values = [{"id": hit["_id"], **hit["_source"]} for hit in hits]
+
+        return {"data": values}
+    except Exception as e:
+        # Handle exceptions
+        raise HTTPException(status_code=500, detail=str(e))
