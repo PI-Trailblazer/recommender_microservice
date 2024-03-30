@@ -25,8 +25,6 @@ def on_message_new_offer(channel, method, properties, body):
     # Json
     body = eval(body)
 
-    print(f"Offer id [new offer]: {body.get('offer_id')}")
-
     # Insert the offer into the Elasticsearch index
     try:
         es.index(
@@ -37,8 +35,6 @@ def on_message_new_offer(channel, method, properties, body):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-    print("Offer inserted into the index.")
-
 
 def on_message_purchased_offer(channel, method, properties, body):
     """
@@ -48,8 +44,6 @@ def on_message_purchased_offer(channel, method, properties, body):
 
     # Json
     body = eval(body)
-
-    print(f"Offer id [purchased offer]: {body.get('offer_id')}")
 
     # Add 1 to the relavence_score of the offer in the Elasticsearch index
     try:
@@ -62,8 +56,6 @@ def on_message_purchased_offer(channel, method, properties, body):
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-    print("Relevance score updated.")
 
 
 def consume_messages():
