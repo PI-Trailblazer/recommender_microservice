@@ -16,7 +16,7 @@ app.include_router(api_router, prefix="/api")
 es = Elasticsearch("http://localhost:9200")
 
 
-def on_message(channel, method, properties, body):
+def on_message_new_offer(channel, method, properties, body):
     """
     Function to run when a message is received from RabbitMQ.
     """
@@ -25,7 +25,45 @@ def on_message(channel, method, properties, body):
     # Json
     body = eval(body)
 
-    print(f"Offer id: {body.get('offer_id')}")
+    print(f"Offer id [new offer]: {body.get('offer_id')}")
+
+    # Insert the offer into the Elasticsearch index
+    try:
+        es.index(
+            index="offers",
+            id=body.get("offer_id"),
+            body={"tags": body.get("tags")},
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    print("Offer inserted into the index.")
+
+
+def on_message_purchased_offer(channel, method, properties, body):
+    """
+    Function to run when a message is received from RabbitMQ.
+    """
+    body = body.decode()
+
+    # Json
+    body = eval(body)
+
+    print(f"Offer id [purchased offer]: {body.get('offer_id')}")
+
+    # Add 1 to the relavence_score of the offer in the Elasticsearch index
+    try:
+        offer = es.get(index="offers", id=body.get("offer_id"))
+        relevance_score = offer.get("_source").get("relevance_score", 0) + 1
+        es.update(
+            index="offers",
+            id=body.get("offer_id"),
+            body={"doc": {"relevance_score": relevance_score}},
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    print("Relevance score updated.")
 
 
 def consume_messages():
@@ -42,9 +80,17 @@ def consume_messages():
     )
 
     channel = connection.channel()
+
     channel.queue_declare(queue="new_offers")
+    channel.queue_declare(queue="purchased_offers")
+
     channel.basic_consume(
-        queue="new_offers", on_message_callback=on_message, auto_ack=True
+        queue="new_offers", on_message_callback=on_message_new_offer, auto_ack=True
+    )
+    channel.basic_consume(
+        queue="purchased_offers",
+        on_message_callback=on_message_purchased_offer,
+        auto_ack=True,
     )
 
     channel.start_consuming()
