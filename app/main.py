@@ -1,14 +1,28 @@
 from fastapi import FastAPI
 import pika
+
+from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import ORJSONResponse
+
 from app.api import router as api_router
 from fastapi import HTTPException
 from elasticsearch import Elasticsearch
 from threading import Thread
+from app.core.config import settings
 
 app = FastAPI(
     title="Recommender Microservice",
     description="This is a very fancy project, with auto docs for the API and everything",
     version="0.1.0",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.BACKEND_CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(api_router, prefix="/api")
