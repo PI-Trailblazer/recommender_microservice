@@ -32,7 +32,7 @@ es = Elasticsearch("http://localhost:9200")
 
 def on_message_new_offer(channel, method, properties, body):
     """
-    Function to run when a message is received from RabbitMQ.
+    Function to add a new offer to the Elasticsearch index.
     """
     body = body.decode()
 
@@ -52,7 +52,7 @@ def on_message_new_offer(channel, method, properties, body):
 
 def on_message_purchased_offer(channel, method, properties, body):
     """
-    Function to run when a message is received from RabbitMQ.
+    Function to update the relevance_score of an offer in the Elasticsearch index.
     """
     body = body.decode()
 
@@ -68,6 +68,22 @@ def on_message_purchased_offer(channel, method, properties, body):
             id=body.get("offer_id"),
             body={"doc": {"relevance_score": relevance_score}},
         )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+def on_message_delete_offer(channel, method, properties, body):
+    """
+    Function to delete an offer from the Elasticsearch index.
+    """
+    body = body.decode()
+
+    # Json
+    body = eval(body)
+
+    # Delete the offer from the Elasticsearch index
+    try:
+        es.delete(index="offers", id=body.get("offer_id"))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -89,6 +105,7 @@ def consume_messages():
 
     channel.queue_declare(queue="new_offers")
     channel.queue_declare(queue="purchased_offers")
+    channel.queue_declare(queue="delete_offer")
 
     channel.basic_consume(
         queue="new_offers", on_message_callback=on_message_new_offer, auto_ack=True
@@ -96,6 +113,11 @@ def consume_messages():
     channel.basic_consume(
         queue="purchased_offers",
         on_message_callback=on_message_purchased_offer,
+        auto_ack=True,
+    )
+    channel.basic_consume(
+        queue="delete_offer",
+        on_message_callback=on_message_delete_offer,
         auto_ack=True,
     )
 
