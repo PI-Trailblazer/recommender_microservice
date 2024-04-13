@@ -27,7 +27,7 @@ app.add_middleware(
 
 app.include_router(api_router, prefix="/api")
 
-es = Elasticsearch("http://localhost:9200")
+es = Elasticsearch("http://elasticsearch:9200")
 
 
 def on_message_new_offer(channel, method, properties, body):
