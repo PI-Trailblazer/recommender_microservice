@@ -94,7 +94,7 @@ def consume_messages():
     """
     connection = pika.BlockingConnection(
         pika.ConnectionParameters(
-            host="localhost",
+            host="rabbitmq",
             port=5672,
             virtual_host="/",
             credentials=pika.PlainCredentials(username="user", password="user"),
