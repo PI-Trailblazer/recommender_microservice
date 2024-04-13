@@ -44,7 +44,7 @@ def on_message_new_offer(channel, method, properties, body):
         es.index(
             index="offers",
             id=body.get("offer_id"),
-            body={"tags": body.get("tags")},
+            body={"tags": body.get("tags"), "relevance_score": 0},
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
