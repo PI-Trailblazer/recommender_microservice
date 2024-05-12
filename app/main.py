@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 import pika
 
@@ -124,7 +125,6 @@ def consume_messages():
     channel.start_consuming()
 
 
-@app.on_event("startup")
 async def startup_event():
     """
     Function to run at the startup of the FastAPI application.
@@ -133,3 +133,9 @@ async def startup_event():
     # Start consuming messages in a separate thread
     thread = Thread(target=consume_messages)
     thread.start()
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    startup_event()
+    yield

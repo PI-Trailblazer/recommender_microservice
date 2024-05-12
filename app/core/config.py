@@ -36,4 +36,11 @@ class Settings(BaseSettings):
             return v
         raise ValueError(v)
 
+    JWT_SECRET_KEY_PATH: str = "./dev-keys/jwt-key"
+    JWT_PUBLIC_KEY_PATH: str = "./dev-keys/jwt-key.pub"
+    ACCESS_TOKEN_EXPIRE_MINUTES: timedelta = timedelta(hours=1)
+    REFRESH_TOKEN_EXPIRE_MINUTES: timedelta = timedelta(days=7)
+    JWT_ALGORITHM: str = "RS256"
+
+
 settings = Settings()
