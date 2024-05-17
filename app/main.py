@@ -11,6 +11,7 @@ from fastapi import HTTPException
 from elasticsearch import Elasticsearch
 from threading import Thread
 from app.core.config import settings
+import loguru
 
 app = FastAPI(
     title="Recommender Microservice",
@@ -129,13 +130,14 @@ async def startup_event():
     """
     Function to run at the startup of the FastAPI application.
     """
-
+    # create index on es
+    loguru.logger.info("Creating index on Elasticsearch")
+    if not es.indices.exists(index="offers"):
+        # Create the index
+        es.indices.create(index="offers")
     # Start consuming messages in a separate thread
     thread = Thread(target=consume_messages)
     thread.start()
 
 
-@asynccontextmanager
-async def lifespan(_: FastAPI):
-    startup_event()
-    yield
+app.add_event_handler("startup", startup_event)
