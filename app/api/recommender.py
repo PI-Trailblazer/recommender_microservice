@@ -1,5 +1,6 @@
 from typing import List
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Security
+from app.api import auth_deps
 from elasticsearch import Elasticsearch
 
 router = APIRouter()
@@ -11,6 +12,8 @@ es = Elasticsearch("http://elasticsearch:9200")
 async def get_elasticsearch_data(size: int):
     try:
         # Execute a search query to retrieve the most 10 relevant documents
+        if es.count(index="offers")["count"] == 0:
+            return {"data": []}
         search_results = es.search(
             index="offers",
             body={
@@ -30,13 +33,10 @@ async def get_elasticsearch_data(size: int):
                 },
             },
         )
-
         # Extract the hits (documents) from the search results
         hits = search_results["hits"]["hits"]
-
         # Extract only the ids from hits
         values = [hit["_id"] for hit in hits]
-
         return {"data": values}
     except Exception as e:
         # Handle exceptions
@@ -44,11 +44,13 @@ async def get_elasticsearch_data(size: int):
 
 
 @router.get("/user_recommendation")
-async def get_recommendations(size: int, user_tags: List[str] = Query(["all"])):
-    if user_tags == ["all"]:
-        user_tags = []
-
+async def get_recommendations(
+    size: int, payload=Security(auth_deps.verify_token, scopes=[])
+):
+    user_tags = payload["tags"]
     try:
+        if es.count(index="offers")["count"] == 0:
+            return {"data": []}
         search_results = es.search(
             index="offers",
             body={
