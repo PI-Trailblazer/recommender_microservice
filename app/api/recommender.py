@@ -93,6 +93,9 @@ async def get_recommendations(
 async def get_recommendations(size: int, offer_tags: List[str]):
 
     try:
+        if es.count(index="offers")["count"] == 0:
+            return {"data": []}
+
         search_results = es.search(
             index="offers",
             body={
