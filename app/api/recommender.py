@@ -90,7 +90,7 @@ async def get_recommendations(
 
 
 @router.get("/offer_recommendation")
-async def get_recommendations(size: int, offer_tags: str):
+async def get_recommendations(size: int, offer_tags: List[str] = Query([])):
 
     try:
         if es.count(index="offers")["count"] == 0:
